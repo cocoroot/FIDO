@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     id: 'acc_001',
     branch: '東京支店',
     accountType: '普通',
-    accountNumber: '1152114',
+    accountNumber: '1234567',
     accountHolder: 'ヤノ　タカシ',
     balance: 10011,
   );
