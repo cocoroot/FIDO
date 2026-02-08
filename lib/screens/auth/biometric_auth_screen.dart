@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
+import '../../constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/local_biometric_service.dart';
 import '../../services/fido_management_service.dart';
@@ -58,7 +59,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
       } else {
         // 認証失敗 → エラーメッセージ表示
         setState(() => _isAuthenticating = false);
-        _showErrorMessage(biometricResult.errorMessage ?? '認証に失敗しました');
+        _showErrorMessage(biometricResult.errorMessage ?? AppStrings.authenticationFailed);
       }
     }
   }
@@ -79,7 +80,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
       } else {
         // FIDO認証失敗
         setState(() => _isAuthenticating = false);
-        _showErrorMessage('FIDO認証に失敗しました');
+        _showErrorMessage(AppStrings.fidoAuthFailed);
       }
     }
   }
@@ -157,7 +158,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                 
                 // タイトル
                 const Text(
-                  '肥後銀行',
+                  AppStrings.appName,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -205,7 +206,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        '認証中...',
+                        AppStrings.authenticating,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -217,7 +218,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                   Column(
                     children: [
                       const Text(
-                        '生体認証でログイン',
+                        AppStrings.biometricAuthTitle,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -226,7 +227,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Touch IDまたはFace IDで認証してください',
+                        AppStrings.biometricAuthDescription,
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -249,7 +250,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                           ),
                         ),
                         child: const Text(
-                          '認証する',
+                          AppStrings.authenticateButton,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -265,7 +266,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                 TextButton(
                   onPressed: _switchToPasscode,
                   child: const Text(
-                    'パスコードで認証',
+                    AppStrings.passcodeAuthButton,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,

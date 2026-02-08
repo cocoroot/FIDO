@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
+import '../../constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../login_screen.dart';
 import 'biometric_settings_screen.dart';
@@ -27,7 +28,7 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('設定'),
+        title: const Text(AppStrings.settingsTitle),
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -37,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.help_outline,
-            title: 'ヘルプ',
+            title: AppStrings.helpMenu,
             onTap: () {
               _showMessage(context, 'ヘルプ（デモ）');
             },
@@ -45,7 +46,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.info_outline,
-            title: '利用規約',
+            title: AppStrings.termsMenu,
             onTap: () {
               _showMessage(context, '利用規約（デモ）');
             },
@@ -54,7 +55,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.person_outline,
-            title: 'アカウントの管理',
+            title: AppStrings.accountManagement,
             onTap: () {
               _showMessage(context, 'アカウントの管理（デモ）');
             },
@@ -62,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.phone_android,
-            title: '利用端末の管理',
+            title: AppStrings.deviceManagement,
             onTap: () {
               _showMessage(context, '利用端末の管理（デモ）');
             },
@@ -71,7 +72,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.lock_outline,
-            title: 'パスコードの変更',
+            title: AppStrings.passcodeChange,
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -83,7 +84,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.fingerprint,
-            title: '生体認証の変更',
+            title: AppStrings.biometricChange,
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -95,7 +96,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.verified_user,
-            title: 'FIDO認証の変更',
+            title: AppStrings.fidoAuthChange,
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -108,7 +109,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.exit_to_app,
-            title: 'アプリを終了する',
+            title: AppStrings.appExit,
             onTap: () {
               _handleLogout(context);
             },
@@ -117,7 +118,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.cancel_outlined,
-            title: '退会の手続き',
+            title: AppStrings.withdrawal,
             titleColor: AppColors.error,
             onTap: () {
               _showMessage(context, '退会の手続き（デモ）');
@@ -127,7 +128,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.article_outlined,
-            title: 'ライセンス',
+            title: AppStrings.licenses,
             onTap: () {
               showLicensePage(context: context);
             },
@@ -137,7 +138,7 @@ class SettingsScreen extends StatelessWidget {
           // アプリバージョン
           const Center(
             child: Text(
-              'アプリバージョン：2.3.0',
+              AppStrings.appVersion,
               style: TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
@@ -184,16 +185,16 @@ class SettingsScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('アプリを終了'),
-        content: const Text('ログアウトしてアプリを終了しますか？'),
+        title: const Text(AppStrings.appExit),
+        content: const Text(AppStrings.confirmLogout),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            child: const Text(AppStrings.cancelButton),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('終了'),
+            child: const Text(AppStrings.exitButton),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_strings.dart';
 import '../models/account.dart';
 import 'settings/settings_screen.dart';
 
@@ -72,14 +73,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'うるおいある未来のために、',
+                    AppStrings.bankTagline,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 10,
                     ),
                   ),
                   Text(
-                    '肥後銀行',
+                    AppStrings.bankName,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -108,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
               IconButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('データを更新しました')),
+                    const SnackBar(content: Text(AppStrings.dataRefreshed)),
                   );
                 },
                 icon: const Icon(Icons.refresh, color: Colors.white),
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
               IconButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('通知（デモ）')),
+                    const SnackBar(content: Text(AppStrings.notificationDemo)),
                   );
                 },
                 icon: Stack(
@@ -246,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   const Text(
-                    '残高表示',
+                    AppStrings.balanceDisplay,
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -289,11 +290,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('明細（デモ）')),
+                      const SnackBar(content: Text(AppStrings.statementDemo)),
                     );
                   },
                   icon: const Icon(Icons.receipt_long),
-                  label: const Text('明細'),
+                  label: const Text(AppStrings.statement),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
                     side: const BorderSide(color: AppColors.primary),
@@ -309,11 +310,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('振込・振替（デモ）')),
+                      const SnackBar(content: Text(AppStrings.transferDemo)),
                     );
                   },
                   icon: const Icon(Icons.swap_horiz),
-                  label: const Text('振込・振替'),
+                  label: const Text(AppStrings.transfer),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.buttonPrimary,
                     foregroundColor: Colors.white,
@@ -338,11 +339,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: OutlinedButton.icon(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('口座を追加（デモ）')),
+            const SnackBar(content: Text(AppStrings.addAccountDemo)),
           );
         },
         icon: const Icon(Icons.add_circle_outline),
-        label: const Text('口座を追加'),
+        label: const Text(AppStrings.addAccount),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.divider),
@@ -365,30 +366,30 @@ class _HomeScreenState extends State<HomeScreen> {
           // 1行目
           Row(
             children: [
-              _buildServiceItem(Icons.computer, 'インターネット\nバンキング'),
-              _buildServiceItem(Icons.insights, '投資信託'),
-              _buildServiceItem(Icons.attach_money, '外貨預金'),
-              _buildServiceItem(Icons.trending_up, '九州FG証券オン\nライントレード'),
+              _buildServiceItem(Icons.computer, AppStrings.internetBanking),
+              _buildServiceItem(Icons.insights, AppStrings.investmentTrust),
+              _buildServiceItem(Icons.attach_money, AppStrings.foreignDeposit),
+              _buildServiceItem(Icons.trending_up, AppStrings.kyushuFgSecurities),
             ],
           ),
           const SizedBox(height: 16),
           // 2行目
           Row(
             children: [
-              _buildServiceItem(Icons.sync_alt, 'ことら送金'),
-              _buildServiceItem(Icons.payment, 'ローン申込'),
-              _buildServiceItem(Icons.credit_card, 'クレジット/\nデビット申込'),
-              _buildServiceItem(Icons.currency_yen, '手数料一覧'),
+              _buildServiceItem(Icons.sync_alt, AppStrings.kotoraTransfer),
+              _buildServiceItem(Icons.payment, AppStrings.loanApplication),
+              _buildServiceItem(Icons.credit_card, AppStrings.cardApplication),
+              _buildServiceItem(Icons.currency_yen, AppStrings.feeList),
             ],
           ),
           const SizedBox(height: 16),
           // 3行目
           Row(
             children: [
-              _buildServiceItem(Icons.password, 'ワンタイム\nパスワード'),
-              _buildServiceItem(Icons.store, '店舗・ATM検索'),
-              _buildServiceItem(Icons.headset_mic, 'お問い合わせ'),
-              _buildServiceItem(Icons.grid_view, 'すべて見る'),
+              _buildServiceItem(Icons.password, AppStrings.oneTimePassword),
+              _buildServiceItem(Icons.store, AppStrings.branchAtmSearch),
+              _buildServiceItem(Icons.headset_mic, AppStrings.contactUs),
+              _buildServiceItem(Icons.grid_view, AppStrings.viewAll),
             ],
           ),
         ],
@@ -436,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildOtherContent() {
     return Center(
       child: Text(
-        ['ホーム', '登録口座', 'サービス'][_selectedIndex],
+        [AppStrings.home, AppStrings.registeredAccounts, AppStrings.services][_selectedIndex],
         style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
@@ -458,15 +459,15 @@ class _HomeScreenState extends State<HomeScreen> {
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: 'ホーム',
+          label: AppStrings.home,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.credit_card),
-          label: '登録口座',
+          label: AppStrings.registeredAccounts,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.grid_view_rounded),
-          label: 'サービス',
+          label: AppStrings.services,
         ),
       ],
     );

@@ -4,6 +4,8 @@
 class AppStrings {
   // アプリ情報
   static const String appName = '肥後銀行';
+  static const String bankName = '肥後銀行';
+  static const String bankTagline = 'うるおいある未来のために、';
   static const String appTagline = 'うるおいある未来のために、';
   static const String appVersion = 'アプリバージョン：2.3.0';
 
@@ -59,27 +61,40 @@ class AppStrings {
   // ホーム画面
   static const String currentTime = '現在';
   static const String balanceDisplay = '残高表示';
-  static const String detailsButton = '明細';
-  static const String transferButton = '振込・振替';
-  static const String addAccountButton = '口座を追加';
+  static const String statement = '明細';
+  static const String transfer = '振込・振替';
+  static const String addAccount = '口座を追加';
+  static const String dataRefreshed = 'データを更新しました';
+  static const String notificationDemo = '通知（デモ）';
+  static const String statementDemo = '明細（デモ）';
+  static const String transferDemo = '振込・振替（デモ）';
+  static const String addAccountDemo = '口座を追加（デモ）';
   
   // サービスメニュー
   static const String internetBanking = 'インターネット\nバンキング';
   static const String investmentTrust = '投資信託';
+  static const String foreignDeposit = '外貨預金';
   static const String foreignCurrency = '外貨預金';
+  static const String kyushuFgSecurities = '九州FG証券オン\nライントレード';
   static const String securitiesTrading = '九州FG証券オン\nライントレード';
+  static const String kotoraTransfer = 'ことら送金';
   static const String kotraTransfer = 'ことら送金';
   static const String loanApplication = 'ローン申込';
+  static const String cardApplication = 'クレジット/\nデビット申込';
   static const String creditDebitCard = 'クレジット/\nデビット申込';
   static const String feeList = '手数料一覧';
   static const String oneTimePassword = 'ワンタイム\nパスワード';
   static const String branchAtmSearch = '店舗・ATM検索';
+  static const String contactUs = 'お問い合わせ';
   static const String contact = 'お問い合わせ';
   static const String viewAll = 'すべて見る';
   
   // ボトムナビゲーション
+  static const String home = 'ホーム';
   static const String homeTab = 'ホーム';
+  static const String registeredAccounts = '登録口座';
   static const String accountsTab = '登録口座';
+  static const String services = 'サービス';
   static const String servicesTab = 'サービス';
   
   // 口座情報

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
+import '../../constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../home_screen.dart';
 import 'biometric_auth_screen.dart';
@@ -49,7 +50,7 @@ class _FidoAuthScreenState extends State<FidoAuthScreen> {
       } else {
         // 認証失敗 → エラーメッセージ表示
         setState(() => _isAuthenticating = false);
-        _showErrorMessage(authProvider.errorMessage ?? 'FIDO認証に失敗しました');
+        _showErrorMessage(authProvider.errorMessage ?? AppStrings.fidoAuthFailed);
       }
     }
   }
@@ -114,7 +115,7 @@ class _FidoAuthScreenState extends State<FidoAuthScreen> {
                 
                 // タイトル
                 const Text(
-                  '肥後銀行',
+                  AppStrings.appName,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -162,7 +163,7 @@ class _FidoAuthScreenState extends State<FidoAuthScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'FIDO認証中...',
+                        AppStrings.fidoAuthenticating,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -174,7 +175,7 @@ class _FidoAuthScreenState extends State<FidoAuthScreen> {
                   Column(
                     children: [
                       const Text(
-                        'FIDO認証でログイン',
+                        AppStrings.fidoAuthTitle,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -183,7 +184,7 @@ class _FidoAuthScreenState extends State<FidoAuthScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Keypasco技術によるセキュアな認証',
+                        AppStrings.fidoAuthDescription,
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -206,7 +207,7 @@ class _FidoAuthScreenState extends State<FidoAuthScreen> {
                           ),
                         ),
                         child: const Text(
-                          'FIDO認証する',
+                          AppStrings.fidoAuthButton,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -236,7 +237,7 @@ class _FidoAuthScreenState extends State<FidoAuthScreen> {
                     TextButton(
                       onPressed: _switchToPasscode,
                       child: const Text(
-                        'パスコードで認証',
+                        AppStrings.passcodeAuthButton,
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,

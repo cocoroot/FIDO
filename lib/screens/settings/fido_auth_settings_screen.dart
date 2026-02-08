@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
+import '../../constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/fido_management_service.dart';
 
@@ -164,7 +165,7 @@ class _FidoAuthSettingsScreenState extends State<FidoAuthSettingsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'FIDO認証',
+                              AppStrings.fidoAuthLabel,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -173,7 +174,7 @@ class _FidoAuthSettingsScreenState extends State<FidoAuthSettingsScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              '生体認証の後にFIDO認証を実行',
+                              AppStrings.fidoAuthSubLabel,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textSecondary,
