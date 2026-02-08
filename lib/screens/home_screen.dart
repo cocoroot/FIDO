@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../services/banking_service.dart';
-import '../models/transaction.dart';
-import 'login_screen.dart';
+import '../constants/app_colors.dart';
+import '../models/account.dart';
+import 'settings/settings_screen.dart';
 
-/// ホーム画面
+/// ホーム画面（実際の肥後銀行アプリ準拠）
 /// 
-/// バンキング機能のメイン画面
-/// - 残高表示
-/// - クイックアクション
-/// - 最近の取引履歴
+/// - グラデーション背景
+/// - 口座カード表示
+/// - 8x2グリッドサービスメニュー
+/// - ボトムナビゲーション
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -19,9 +17,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final BankingService _bankingService = BankingService();
-  List<Transaction> _recentTransactions = [];
+  Account? _account;
   bool _isLoading = true;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -32,364 +30,415 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     
-    final transactions = await _bankingService.getTransactions('user_001');
+    // モック口座データを取得
+    await Future.delayed(const Duration(milliseconds: 500));
+    _account = Account(
+      id: 'account_001',
+      branch: '東京支店',
+      accountNumber: '1152114',
+      accountType: '普通',
+      accountHolder: 'ヤノ　タカシ',
+      balance: 10011,
+      isDisplayed: true,
+    );
     
-    setState(() {
-      _recentTransactions = transactions.take(5).toList();
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
-  Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ログアウト'),
-        content: const Text('ログアウトしますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('ログアウト'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.logout();
-      
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
+  void _onBottomNavTap(int index) {
+    setState(() => _selectedIndex = index);
+    
+    if (index == 2) {
+      // サービスメニュー → 設定画面へ
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.user;
-
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text('肥後銀行'),
-        backgroundColor: const Color(0xFF003D7A),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _handleLogout,
-            tooltip: 'ログアウト',
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ユーザー情報バナー
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF003D7A),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.verified_user, color: Colors.white, size: 20),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'FIDO認証済み',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'こんにちは、${user?.name ?? 'ゲスト'}さん',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '口座番号: ${user?.accountNumber ?? '-'}',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // 残高カード
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF003D7A),
-                                const Color(0xFF005AA7),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '普通預金残高',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '¥${(user?.balance ?? 0).toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // クイックアクション
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _QuickActionButton(
-                              icon: Icons.swap_horiz,
-                              label: '振込',
-                              color: Colors.blue,
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('振込機能（デモ）')),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _QuickActionButton(
-                              icon: Icons.payment,
-                              label: '支払い',
-                              color: Colors.green,
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('支払い機能（デモ）')),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _QuickActionButton(
-                              icon: Icons.qr_code_scanner,
-                              label: 'QR決済',
-                              color: Colors.orange,
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('QR決済機能（デモ）')),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // 取引履歴セクション
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            '最近の取引',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('全履歴表示（デモ）')),
-                              );
-                            },
-                            child: const Text('すべて表示'),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // 取引履歴リスト
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _recentTransactions.length,
-                      itemBuilder: (context, index) {
-                        final transaction = _recentTransactions[index];
-                        return _TransactionListItem(transaction: transaction);
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-    );
-  }
-}
-
-/// クイックアクションボタン
-class _QuickActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.primaryGradient,
+        ),
+        child: SafeArea(
           child: Column(
             children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+              // ヘッダー
+              _buildHeader(),
+              
+              // メインコンテンツ
+              Expanded(
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            
+                            // 口座カード
+                            if (_account != null) _buildAccountCard(_account!),
+                            
+                            const SizedBox(height: 24),
+                            
+                            // 口座を追加ボタン
+                            _buildAddAccountButton(),
+                            
+                            const SizedBox(height: 32),
+                            
+                            // サービスメニューグリッド
+                            _buildServiceGrid(),
+                            
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
               ),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: _buildBottomNavigation(),
     );
   }
-}
 
-/// 取引履歴リストアイテム
-class _TransactionListItem extends StatelessWidget {
-  final Transaction transaction;
-
-  const _TransactionListItem({required this.transaction});
-
-  IconData _getIconForType(String type) {
-    switch (type) {
-      case 'deposit':
-        return Icons.arrow_downward;
-      case 'withdrawal':
-        return Icons.arrow_upward;
-      case 'transfer':
-        return Icons.swap_horiz;
-      default:
-        return Icons.receipt;
-    }
-  }
-
-  Color _getColorForType(String type) {
-    switch (type) {
-      case 'deposit':
-        return Colors.green;
-      case 'withdrawal':
-        return Colors.red;
-      case 'transfer':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getColorForType(transaction.type).withValues(alpha: 0.1),
-          child: Icon(
-            _getIconForType(transaction.type),
-            color: _getColorForType(transaction.type),
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          // ロゴ
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Image.asset(
+              'assets/icon/app_icon.png',
+              fit: BoxFit.contain,
+            ),
           ),
-        ),
-        title: Text(
-          transaction.description,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          '${transaction.date.month}/${transaction.date.day} ${transaction.typeLabel}',
-          style: const TextStyle(fontSize: 12),
-        ),
-        trailing: Text(
-          transaction.formattedAmount,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: transaction.type == 'deposit' ? Colors.green : Colors.red,
+          const SizedBox(width: 8),
+          const Text(
+            '肥後銀行',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          
+          // 現在時刻
+          const Text(
+            '09:17現在',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // 更新アイコン
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _loadData,
+          ),
+          
+          // 通知アイコン
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            onPressed: () {},
+          ),
+          
+          // 設定アイコン
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(Account account) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // カラーバー
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // 支店・口座情報
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      account.branch,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${account.accountType}　${account.formattedAccountNumber}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      account.accountHolder,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // 残高表示トグル
+              Text(
+                '残高表示',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: account.isDisplayed,
+                onChanged: (value) {
+                  setState(() {
+                    _account = account.copyWith(isDisplayed: value);
+                  });
+                },
+                activeTrackColor: AppColors.primary,
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // 残高
+          if (account.isDisplayed)
+            Text(
+              '${account.formattedBalance}円',
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            )
+          else
+            const Text(
+              '＊＊＊＊＊円',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          
+          const SizedBox(height: 20),
+          
+          // アクションボタン
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.article_outlined, size: 20),
+                  label: const Text('明細'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.sync_alt, size: 20),
+                  label: const Text('振込・振替'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.buttonPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddAccountButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: OutlinedButton.icon(
+        onPressed: () {},
+        icon: const Icon(Icons.add_circle_outline),
+        label: const Text('口座を追加'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: Colors.white70),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildServiceGrid() {
+    final services = [
+      _ServiceItem(Icons.laptop_mac, 'インターネット\nバンキング'),
+      _ServiceItem(Icons.trending_up, '投資信託'),
+      _ServiceItem(Icons.currency_exchange, '外貨預金'),
+      _ServiceItem(Icons.show_chart, '九州FG証券オン\nライントレード'),
+      _ServiceItem(Icons.account_balance, 'ことら送金'),
+      _ServiceItem(Icons.credit_card, 'ローン申込'),
+      _ServiceItem(Icons.payment, 'クレジット/\nデビット申込'),
+      _ServiceItem(Icons.receipt_long, '手数料一覧'),
+      _ServiceItem(Icons.lock_outline, 'ワンタイム\nパスワード'),
+      _ServiceItem(Icons.store, '店舗・ATM検索'),
+      _ServiceItem(Icons.support_agent, 'お問い合わせ'),
+      _ServiceItem(Icons.grid_view, 'すべて見る'),
+    ];
+
+    return Container(
+      color: Colors.white.withValues(alpha: 0.15),
+      padding: const EdgeInsets.all(16),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          childAspectRatio: 0.85,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: services.length,
+        itemBuilder: (context, index) {
+          final service = services[index];
+          return _buildServiceItem(service);
+        },
+      ),
+    );
+  }
+
+  Widget _buildServiceItem(_ServiceItem service) {
+    return InkWell(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${service.label}（デモ）')),
+        );
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            service.icon,
+            size: 32,
+            color: Colors.white,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            service.label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Colors.white,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigation() {
+    return BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      onTap: _onBottomNavTap,
+      selectedItemColor: AppColors.primary,
+      unselectedItemColor: AppColors.textSecondary,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'ホーム',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.credit_card),
+          label: '登録口座',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.apps),
+          label: 'サービス',
+        ),
+      ],
+    );
+  }
+}
+
+class _ServiceItem {
+  final IconData icon;
+  final String label;
+
+  _ServiceItem(this.icon, this.label);
 }
