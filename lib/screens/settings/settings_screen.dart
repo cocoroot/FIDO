@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../login_screen.dart';
 import 'biometric_settings_screen.dart';
 import 'passcode_change_screen.dart';
+import 'fido_auth_settings_screen.dart';
 
 /// 設定画面（実際の肥後銀行アプリ準拠）
 /// 
@@ -87,6 +88,18 @@ class SettingsScreen extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const BiometricSettingsScreen(),
+                ),
+              );
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.verified_user,
+            title: 'FIDO認証の設定',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const FidoAuthSettingsScreen(),
                 ),
               );
             },

@@ -1,68 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/local_biometric_service.dart';
 import '../home_screen.dart';
+import 'biometric_auth_screen.dart';
 import 'passcode_input_screen.dart';
 
-/// 起動時生体認証画面（従来の顔認証・指紋認証）
+/// 起動時FIDO認証画面
 /// 
-/// アプリ起動時に表示される認証画面
-/// - ローカル生体認証（顔認証 / 指紋認証）で認証
-/// - パスコード入力へ切り替え可能
-/// 
-/// 【重要】これは従来のローカル生体認証画面です。
-/// FIDO認証とは異なります。
-class BiometricAuthScreen extends StatefulWidget {
-  const BiometricAuthScreen({super.key});
+/// FIDO認証が有効化されている場合に表示される認証画面
+/// - FIDO認証（Keypasco SDK）で認証
+/// - 従来の生体認証またはパスコードへフォールバック可能
+class FidoAuthScreen extends StatefulWidget {
+  const FidoAuthScreen({super.key});
 
   @override
-  State<BiometricAuthScreen> createState() => _BiometricAuthScreenState();
+  State<FidoAuthScreen> createState() => _FidoAuthScreenState();
 }
 
-class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
-  final LocalBiometricService _biometricService = LocalBiometricService();
+class _FidoAuthScreenState extends State<FidoAuthScreen> {
   bool _isAuthenticating = false;
 
   @override
   void initState() {
     super.initState();
-    // 画面表示後に自動でローカル生体認証を開始
+    // 画面表示後に自動でFIDO認証を開始
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _handleBiometricAuth();
+      _handleFidoAuth();
     });
   }
 
-  Future<void> _handleBiometricAuth() async {
+  Future<void> _handleFidoAuth() async {
     if (_isAuthenticating) return;
 
     setState(() => _isAuthenticating = true);
 
-    // ローカル生体認証を実行
-    final result = await _biometricService.authenticate();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // FIDO認証を実行（Keypasco SDK呼び出し）
+    final success = await authProvider.authenticateWithPasskey('user_001');
 
     if (mounted) {
-      if (result.success) {
-        // 認証成功 → ログイン状態を保存してホーム画面へ
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', 'user_001'); // モックユーザーID
-        await prefs.setBool('isLoggedIn', true);
-        
-        // AuthProviderの状態を更新
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.restoreAuthState();
-        
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
-        }
+      if (success) {
+        // 認証成功 → ホーム画面へ
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       } else {
         // 認証失敗 → エラーメッセージ表示
         setState(() => _isAuthenticating = false);
-        _showErrorMessage(result.errorMessage ?? '認証に失敗しました');
+        _showErrorMessage(authProvider.errorMessage ?? 'FIDO認証に失敗しました');
       }
     }
   }
@@ -74,6 +61,12 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
         backgroundColor: AppColors.error,
         duration: const Duration(seconds: 3),
       ),
+    );
+  }
+
+  void _switchToBiometric() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const BiometricAuthScreen()),
     );
   }
 
@@ -143,7 +136,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                 
                 const SizedBox(height: 80),
                 
-                // 指紋アイコン
+                // FIDO認証アイコン
                 Container(
                   width: 120,
                   height: 120,
@@ -152,7 +145,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.fingerprint,
+                    Icons.verified_user,
                     size: 80,
                     color: Colors.white,
                   ),
@@ -169,7 +162,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        '認証中...',
+                        'FIDO認証中...',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -181,7 +174,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                   Column(
                     children: [
                       const Text(
-                        '生体認証でログイン',
+                        'FIDO認証でログイン',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -190,7 +183,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Touch IDまたはFace IDで認証してください',
+                        'Keypasco技術によるセキュアな認証',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -200,7 +193,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                       
                       // 再試行ボタン
                       ElevatedButton(
-                        onPressed: _handleBiometricAuth,
+                        onPressed: _handleFidoAuth,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.primary,
@@ -213,7 +206,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                           ),
                         ),
                         child: const Text(
-                          '認証する',
+                          'FIDO認証する',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -225,17 +218,33 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
                 
                 const SizedBox(height: 40),
                 
-                // パスコードに切り替え
-                TextButton(
-                  onPressed: _switchToPasscode,
-                  child: const Text(
-                    'パスコードで認証',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      decoration: TextDecoration.underline,
+                // フォールバックオプション
+                Column(
+                  children: [
+                    TextButton(
+                      onPressed: _switchToBiometric,
+                      child: const Text(
+                        '従来の生体認証で認証',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _switchToPasscode,
+                      child: const Text(
+                        'パスコードで認証',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

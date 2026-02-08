@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'constants/app_colors.dart';
 import 'providers/auth_provider.dart';
 import 'services/passcode_service.dart';
+import 'services/fido_management_service.dart';
 import 'screens/auth/biometric_auth_screen.dart';
+import 'screens/auth/fido_auth_screen.dart';
 import 'screens/auth/passcode_input_screen.dart';
 import 'screens/auth/passcode_setup_screen.dart';
 import 'screens/home_screen.dart';
@@ -50,10 +52,12 @@ class MyApp extends StatelessWidget {
 
 /// スプラッシュ画面（認証フロー振り分け）
 /// 
+/// 認証方式の優先順位:
 /// 1. パスコード未設定 → パスコード設定画面
-/// 2. 生体認証有効 → FIDO2生体認証画面
-/// 3. 生体認証無効 → パスコード入力画面
-/// 4. 既にログイン済み → ホーム画面
+/// 2. FIDO認証有効 → FIDO認証画面（Keypasco SDK使用）
+/// 3. 従来の生体認証有効 → 生体認証画面（顔認証）
+/// 4. どちらも無効 → パスコード入力画面
+/// 5. 既にログイン済み → ホーム画面
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -76,6 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final passcodeService = PasscodeService();
+    final fidoManagement = FidoManagementService();
 
     // 認証状態を復元
     await authProvider.restoreAuthState();
@@ -94,16 +99,28 @@ class _SplashScreenState extends State<SplashScreen> {
       // 既にログイン済み → ホーム画面へ
       nextScreen = const HomeScreen();
     } else {
-      // 生体認証設定チェック
-      final prefs = await SharedPreferences.getInstance();
-      final isBiometricEnabled = prefs.getBool('biometric_enabled') ?? true;
-
-      if (isBiometricEnabled) {
-        // 生体認証有効 → FIDO2認証画面
-        nextScreen = const BiometricAuthScreen();
+      // 🔐 認証方式の優先順位を決定
+      // 1. FIDO認証が有効な場合 → FIDO認証画面
+      // 2. 従来の生体認証が有効な場合 → 生体認証画面
+      // 3. どちらも無効な場合 → パスコード入力画面
+      
+      final isFidoEnabled = await fidoManagement.isFidoEnabled();
+      
+      if (isFidoEnabled) {
+        // FIDO認証優先
+        nextScreen = const FidoAuthScreen();
       } else {
-        // 生体認証無効 → パスコード入力画面
-        nextScreen = const PasscodeInputScreen();
+        // 従来の生体認証をチェック
+        final prefs = await SharedPreferences.getInstance();
+        final isBiometricEnabled = prefs.getBool('biometric_enabled') ?? true;
+
+        if (isBiometricEnabled) {
+          // 従来の生体認証（顔認証）
+          nextScreen = const BiometricAuthScreen();
+        } else {
+          // パスコード入力
+          nextScreen = const PasscodeInputScreen();
+        }
       }
     }
 

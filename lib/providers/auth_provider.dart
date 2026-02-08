@@ -18,6 +18,7 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  FidoAuthService get fidoAuthService => _fidoService; // 外部からアクセス可能に
 
   /// アプリ起動時に認証状態を復元
   Future<void> restoreAuthState() async {
