@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/local_biometric_service.dart';
+import '../../services/fido_management_service.dart';
 import '../home_screen.dart';
 import 'passcode_input_screen.dart';
 
@@ -11,10 +12,8 @@ import 'passcode_input_screen.dart';
 /// 
 /// アプリ起動時に表示される認証画面
 /// - ローカル生体認証（顔認証 / 指紋認証）で認証
+/// - FIDO認証設定済みの場合は、生体認証成功後にFIDO認証も実行
 /// - パスコード入力へ切り替え可能
-/// 
-/// 【重要】これは従来のローカル生体認証画面です。
-/// FIDO認証とは異なります。
 class BiometricAuthScreen extends StatefulWidget {
   const BiometricAuthScreen({super.key});
 
@@ -24,6 +23,7 @@ class BiometricAuthScreen extends StatefulWidget {
 
 class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
   final LocalBiometricService _biometricService = LocalBiometricService();
+  final FidoManagementService _fidoManagement = FidoManagementService();
   bool _isAuthenticating = false;
 
   @override
@@ -40,29 +40,65 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
 
     setState(() => _isAuthenticating = true);
 
-    // ローカル生体認証を実行
-    final result = await _biometricService.authenticate();
+    // ステップ1: ローカル生体認証を実行
+    final biometricResult = await _biometricService.authenticate();
 
     if (mounted) {
-      if (result.success) {
-        // 認証成功 → ログイン状態を保存してホーム画面へ
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', 'user_001'); // モックユーザーID
-        await prefs.setBool('isLoggedIn', true);
+      if (biometricResult.success) {
+        // 生体認証成功 → FIDO認証設定チェック
+        final isFidoEnabled = await _fidoManagement.isFidoEnabled();
         
-        // AuthProviderの状態を更新
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.restoreAuthState();
-        
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
+        if (isFidoEnabled) {
+          // FIDO認証が設定済み → FIDO認証も実行
+          await _executeFidoAuth();
+        } else {
+          // FIDO認証未設定 → そのままログイン
+          await _completeLogin();
         }
       } else {
         // 認証失敗 → エラーメッセージ表示
         setState(() => _isAuthenticating = false);
-        _showErrorMessage(result.errorMessage ?? '認証に失敗しました');
+        _showErrorMessage(biometricResult.errorMessage ?? '認証に失敗しました');
+      }
+    }
+  }
+
+  Future<void> _executeFidoAuth() async {
+    if (!mounted) return;
+
+    // FIDO認証を実行
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final fidoSuccess = await authProvider.authenticateWithPasskey('user_001');
+
+    if (mounted) {
+      if (fidoSuccess) {
+        // FIDO認証成功 → ホーム画面へ
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } else {
+        // FIDO認証失敗
+        setState(() => _isAuthenticating = false);
+        _showErrorMessage('FIDO認証に失敗しました');
+      }
+    }
+  }
+
+  Future<void> _completeLogin() async {
+    // ログイン状態を保存
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userId', 'user_001'); // モックユーザーID
+    await prefs.setBool('isLoggedIn', true);
+    
+    // AuthProviderの状態を更新
+    if (mounted) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.restoreAuthState();
+      
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       }
     }
   }

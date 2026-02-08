@@ -95,7 +95,7 @@ class SettingsScreen extends StatelessWidget {
           _buildMenuItem(
             context,
             icon: Icons.verified_user,
-            title: 'FIDO認証の設定',
+            title: 'FIDO認証の変更',
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
